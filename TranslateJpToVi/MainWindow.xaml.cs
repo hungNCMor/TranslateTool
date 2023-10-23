@@ -1,19 +1,8 @@
 ﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using TranslateLib;
 using TranslateLib.Interface;
 
 namespace TranslateJpToVi
@@ -24,10 +13,12 @@ namespace TranslateJpToVi
     public partial class MainWindow : Window
     {
         ITranslateExcel _translate;
-        public MainWindow(ITranslateExcel translate)
+        ITranslateFile _translateFile;
+        public MainWindow(ITranslateExcel translate, ITranslateFile translateFile)
         {
             _translate = translate;
             InitializeComponent();
+            _translateFile = translateFile;
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -45,13 +36,24 @@ namespace TranslateJpToVi
             else
             {
                 Overlay.Visibility = Visibility.Visible;
-              await  Task.Run(() =>
-                {
-                    _translate.TranslateExcelByPathSavePath(path);
-                    //...rest of code
-                });
-              
-                //await Task.Delay(10000 );
+                await Task.Run(async () =>
+                  {
+                      var fileName = path.Split('.').Last();
+                      switch (fileName)
+                      {
+                          case "xlsx":
+                          case "csv":
+                          case "xls":
+                           await   _translate.TranslateExcelByPathSavePath(path);
+                              break;
+                          case "pptx":
+                          case "ppt":
+                           await _translateFile.TranslateFileByPathSavePath(path);
+                              break;
+                      }
+                      //...rest of code
+                  });
+
                 Overlay.Visibility = Visibility.Hidden;
             }
         }

@@ -5,9 +5,9 @@ using TranslateLib.Interface;
 using FastExcel;
 using DocumentFormat.OpenXml.Spreadsheet;
 
-namespace TranslateLib
+namespace TranslateLib.Excel
 {
-    public class TranslateWithFastExcel :ITranslateExcel
+    public class TranslateWithFastExcel : ITranslateExcel
     {
         ILogger _logger;
         ITranslate _translate;
@@ -28,7 +28,7 @@ namespace TranslateLib
             var inputFile = new FileInfo(path);
             // Create an instance of Fast Excel
             using (FastExcel.FastExcel fastExcel = new FastExcel.FastExcel(inputFile, true))
-            { 
+            {
                 foreach (var worksheet in fastExcel.Worksheets)
                 {
                     Console.WriteLine(string.Format("Worksheet Name:{0}, Index:{1}", worksheet.Name, worksheet.Index));

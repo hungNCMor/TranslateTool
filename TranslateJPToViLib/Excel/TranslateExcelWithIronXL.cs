@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using TranslateLib.Interface;
 using TranslateLib.Model;
 
-namespace TranslateLib
+namespace TranslateLib.Excel
 {
     public class TranslateExcelWithIronXL : ITranslateExcel
     {
@@ -77,7 +77,7 @@ namespace TranslateLib
                                 _logger.LogInformation($"GetCellAt row={row}, column={column}, sheet ={sheet.Name}");
                                 cellValue = sheet.GetCellAt(row, column)?.StringValue;
 
-                                if (String.IsNullOrEmpty(cellValue?.Trim()))
+                                if (string.IsNullOrEmpty(cellValue?.Trim()))
                                 {
                                     continue;
                                 }
@@ -101,7 +101,7 @@ namespace TranslateLib
             {
                 var t = DateTime.Now;
                 var fileName = path.Replace(".xlsx", "").Split('\\').Last();
-                Console.WriteLine($" {fileName} ThreadId: {System.Environment.CurrentManagedThreadId}");
+                Console.WriteLine($" {fileName} ThreadId: {Environment.CurrentManagedThreadId}");
 
                 using (var ms = new MemoryStream())
                 {
@@ -141,7 +141,7 @@ namespace TranslateLib
             {
                 var t = DateTime.Now;
                 var fileName = path.Replace(".xlsx", "").Split('\\').Last();
-                Console.WriteLine($" {fileName} ThreadId: {System.Environment.CurrentManagedThreadId}");
+                Console.WriteLine($" {fileName} ThreadId: {Environment.CurrentManagedThreadId}");
 
                 using (var ms = new MemoryStream())
                 {

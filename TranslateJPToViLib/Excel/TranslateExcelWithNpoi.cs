@@ -9,7 +9,7 @@ using NPOI.HPSF;
 using DocumentFormat.OpenXml.Spreadsheet;
 using CellType = NPOI.SS.UserModel.CellType;
 
-namespace TranslateLib
+namespace TranslateLib.Excel
 {
     public class TranslateExcelWithNpoi : ITranslateExcel
     {
@@ -45,7 +45,7 @@ namespace TranslateLib
                             {
                                 // Retrieve the cell value
                                 string cellValue = cell.ToString().Trim();
-                                if (!String.IsNullOrEmpty(cellValue))
+                                if (!string.IsNullOrEmpty(cellValue))
                                     cell.SetCellValue(_translate.TranslateText(cellValue!));
                                 Console.WriteLine($"Cell value: {cellValue}");
                             }
@@ -74,16 +74,16 @@ namespace TranslateLib
                     {
                         ISheet sheet = workbook.GetSheetAt(i);
                         string sheetName = sheet.SheetName;
-                        string newSheetName = _translate.TranslateText(sheet.SheetName).Replace("/", ".").Replace("・", ".");
+                        string newSheetName = _translate.TranslateText(sheet.SheetName, "ja", "en").Replace("/", ".").Replace("・", ".");
 
-                        newSheetName = newSheetName.Replace('[', '(').Replace(']', ')').Substring(0, newSheetName.Length > 29 ? 29 : newSheetName.Length)+i;
+                        newSheetName = newSheetName.Replace('[', '(').Replace(']', ')').Substring(0, newSheetName.Length > 29 ? 29 : newSheetName.Length) + i;
                         //newSheetName = sheetName.Length <= 29 ? newSheetName : newSheetName + i;
                         tasks.Add(HandleWorkSheet(sheet, i));
                         workbook.SetSheetName(i, newSheetName);
                         var t1 = DateTime.Now;
                         await Task.WhenAll(tasks);
                     }
-                    var newFileName = fileName + _translate.TranslateText(fileName).Replace("/", "_").Replace("\\","_") + ".xlsx";
+                    var newFileName = fileName + _translate.TranslateText(fileName,"ja","en").Replace("/", "_").Replace("\\", "_") + ".xlsx";
                     using (FileStream fs = new FileStream(Path.Combine(string.Join("\\", path.Replace(".xlsx", "").Split('\\').SkipLast(1)), newFileName), FileMode.CreateNew))
                         workbook.Write(fs);
                 }

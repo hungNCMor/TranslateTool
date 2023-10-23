@@ -3,6 +3,7 @@ using IronXL;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Office.Core;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System.Collections;
@@ -12,6 +13,10 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Spire.Presentation;
+using Microsoft.Office.Interop.PowerPoint;
+using Spire.Pdf.Exporting.XPS.Schema;
+using IronXL.Drawing;
 
 namespace TranslateTool.Controllers
 {
@@ -173,13 +178,13 @@ namespace TranslateTool.Controllers
             var files = d.GetFiles();
             foreach (var folder in folders)
             {
-                var newPath = Path.Combine(path, folder.Name + TranslateText(folder.Name));
+                var newPath = System.IO.Path.Combine(path, folder.Name + TranslateText(folder.Name));
                 if (newPath != folder.FullName)
                     Directory.Move(folder.FullName, newPath);
             }
             foreach (var file in files)
             {
-                var newNameFile = Path.Combine(path, file.Name + TranslateText(file.Name));
+                var newNameFile = System.IO.Path.Combine(path, file.Name + TranslateText(file.Name));
                 newNameFile = newNameFile.Replace("/", ".");
                 if (newNameFile != file.FullName)
                     System.IO.File.Move(file.FullName, newNameFile);
@@ -192,8 +197,8 @@ namespace TranslateTool.Controllers
 
             foreach (var file in files)
             {
-                var newNameFile = file.Name.Split(".xlsx").FirstOrDefault()+ ".xlsx";
-               var newFullName = Path.Combine(path, newNameFile);
+                var newNameFile = file.Name.Split(".xlsx").FirstOrDefault() + ".xlsx";
+                var newFullName = System.IO.Path.Combine(path, newNameFile);
                 if (newFullName != file.FullName)
                     System.IO.File.Move(file.FullName, newNameFile);
             }
@@ -223,7 +228,7 @@ namespace TranslateTool.Controllers
         {
             try
             {
-                string sheetName = TranslateText(sheet.Name).Replace("/", ".").Replace("・",".");
+                string sheetName = TranslateText(sheet.Name).Replace("/", ".").Replace("・", ".");
 
                 sheetName = sheetName.Replace('[', '(').Replace(']', ')').Substring(0, sheetName.Length > 29 ? 30 : sheetName.Length);
                 sheet.Name = sheetName + i;
@@ -299,12 +304,12 @@ namespace TranslateTool.Controllers
             public int column { get; set; }
             public int Sheet { get; set; }
         }
-        private string TranslateText(string input)
+        private string TranslateText(string input, string des = "vi", string src = "ja")
         {
             var t2 = DateTime.Now;
             string url = String.Format
             ("https://translate.googleapis.com/translate_a/single?client=gtx&tl={0}&sl={1}&dt=t&q={2}",
-             "vi", "ja", Uri.EscapeUriString(input));
+             des, src, Uri.EscapeUriString(input));
             HttpClient httpClient = new HttpClient();
             string responseBody = httpClient.GetStringAsync(url).Result;
 
@@ -318,7 +323,19 @@ namespace TranslateTool.Controllers
             dynamic data = JsonConvert.DeserializeObject(response);
             try
             {
-                string extractedString = data[0][0][0].ToString();
+                string extractedString = "";
+                if (data[0].Count == 1) { extractedString = data[0][0][0].ToString(); }
+                else if (data[0].Count > 1)
+                {
+                    foreach (dynamic item in data[0])
+                    {
+                        //extractedString = item.ToString();
+                        string extractedString2 = item[0].ToString();
+                        extractedString = extractedString + extractedString2;
+                    }
+                }
+
+
                 return extractedString;
             }
             catch (Exception c)
@@ -326,8 +343,199 @@ namespace TranslateTool.Controllers
 
                 throw;
             }
+        }
+        [HttpPost("CreateExcel")]
+        public void Create()
+        {
+            try
+            {
+                CreateExcel();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
 
 
         }
+        [HttpPost("Replace")]
+        public void Replace()
+        {
+
+            try
+            {
+                ReplaceSheetName();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private void CreateExcel()
+        {
+            WorkBook xlsWorkbook = WorkBook.Create(ExcelFileFormat.XLS);
+            WorkSheet xlsSheet = xlsWorkbook.CreateWorkSheet("画面・機能概要");
+            xlsWorkbook.SaveAs("excelfile.xlsx");
+        }
+        private void ReplaceSheetName()
+        {
+            WorkBook workBook = WorkBook.Load("excelfile.xlsx");
+            WorkSheet workSheet = workBook.GetWorkSheet("画面・機能概要");
+            string sheetName = workSheet.Name;
+            Console.WriteLine(sheetName);
+            //workSheet.Name = "画面機能概要";
+            workSheet.Name = "画面機能概要";
+            workBook.SaveAs("newexcelfile.xlsx");
+        }
+        [HttpPost("Translate")]
+        public async Task<ActionResult> ReplaceSheetName2(IFormFile file)
+        {
+            try
+            {
+                ThreadPool.GetMaxThreads(out int vc, out int maxThreads);
+                Console.WriteLine($"Current maximum thread count:{vc} {maxThreads}");
+                var t = DateTime.Now;
+
+                if (file == null)
+                    throw new ArgumentNullException(nameof(file));
+                using (var ms = new MemoryStream())
+                {
+                    await file.CopyToAsync(ms);
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    // Supported spreadsheet formats for reading include: XLSX, XLS, CSV and TSV
+
+                    WorkBook workBook = WorkBook.Load(ms);
+                    WorkSheet workSheet = workBook.GetWorkSheet("画面・機能概要");
+                    string sheetName = workSheet.Name;
+                    Console.WriteLine(sheetName);
+                    //workSheet.Name = "画面機能概要";
+                    workSheet.Name = "画面機能概要";
+                    workBook.SaveAs("newexcelfile.xlsx");
+                    return File(workBook.ToByteArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "vcc");
+
+                }
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+
+        }
+        [HttpPost("ReadPPT")]
+        public async Task<ActionResult> ReadPPT()
+        {
+            Microsoft.Office.Interop.PowerPoint.Application PowerPoint_App = new Microsoft.Office.Interop.PowerPoint.Application();
+            Microsoft.Office.Interop.PowerPoint.Presentations multi_presentations = PowerPoint_App!.Presentations;
+            Microsoft.Office.Interop.PowerPoint.Presentation presentation = multi_presentations.Open(@"C:\Users\admin\Downloads\Tình trạng phát triển health management app.pptx");
+            string presentation_text = "";
+            for (int i = 0; i < presentation.Slides.Count; i++)
+            {
+                foreach (var item in presentation.Slides[i + 1].Shapes)
+                {
+                    var shape = (Microsoft.Office.Interop.PowerPoint.Shape)item;
+                    if (shape.HasTextFrame == MsoTriState.msoTrue)
+                    {
+                        if (shape.TextFrame.HasText == MsoTriState.msoTrue)
+                        {
+                            var textRange = shape.TextFrame.TextRange;
+                            var text = textRange.Text;
+                            presentation_text += text + " ";
+                        }
+                    }
+                }
+            }
+            PowerPoint_App.Quit();
+            return Ok();
+        }
+
+
+
+        [HttpPost("ReadPPTSpire")]
+        public async Task<ActionResult> ReadPPTSpire()
+        {
+            // Assuming you have a Presentation object called 'presentation'
+            Spire.Presentation.Presentation presentation = new Spire.Presentation.Presentation();
+
+            // Load the PowerPoint file
+            presentation.LoadFromFile(@"C:\Users\admin\Downloads\Tình trạng phát triển health management app.pptx");
+            foreach (ISlide slide in presentation.Slides)
+            {
+                // Read the shapes within the slide
+                foreach (IShape shape in slide.Shapes)
+                {
+                    string shapeText = string.Empty;
+
+                    if (shape is IAutoShape)
+                    {
+                        IAutoShape autoShape = (IAutoShape)shape;
+                        shapeText = autoShape.TextFrame.Text.Trim();
+                        if (!string.IsNullOrEmpty(shapeText))
+                        {
+                            autoShape.TextFrame.Text = TranslateText(shapeText.Replace("。",". "), "en", "ja");
+                            autoShape.TextFrame.TextRange.FontHeight = 12;
+
+                            if (autoShape.TextFrame.Paragraphs.Count > 0)
+                            {
+                                foreach (TextParagraph paragraph in autoShape.TextFrame.Paragraphs)
+                                {
+                                    foreach (Spire.Presentation.TextRange item in paragraph.TextRanges)
+                                    {
+
+                                        //paragraph.TextRanges[0].FontHeight = 12; // Replace 18 with the desired font size
+                                        item.FontHeight = 12; // Replace 18 with the desired font size
+                                        
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    else if (shape is Spire.Presentation.ITable)
+                    {
+                        var table = (Spire.Presentation.ITable)shape;
+                        // Read the table data
+                        if (table != null)
+                        {
+                            int rowCount = table.TableRows.Count;
+                            int columnCount = table.ColumnsList.Count;
+
+                            for (int row = 0; row < rowCount; row++)
+                            {
+                                for (int column = 0; column < columnCount; column++)
+                                {
+                                    Spire.Presentation.Cell cell = table[column, row];
+                                    string cellText = cell.TextFrame.Text.Trim();
+                                    if (!string.IsNullOrEmpty(cellText))
+                                        cell.TextFrame.Text = TranslateText(cellText.Replace("。", ". "), "en", "ja");
+                                    // Set the font size
+                                    cell.TextFrame.TextRange.FontHeight = 12;
+                                    // Perform operations with cellText
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            presentation.SaveToFile(@"C:\Users\admin\Downloads\Tình trạng phát triển health management app2.pptx", FileFormat.Pptx2013);
+            //// Assuming you have a Slide object called 'slide'
+            //ISlide slide = presentation.Slides[0]; // Example slide index
+
+            //// Assuming you have a Shape object called 'shape'
+            //IShape shape = slide.Shapes[0]; // Example shape index
+
+            //// Read the shape properties
+            //string shapeText = shape.AlternativeText.Trim();
+
+            // Close the presentation
+            presentation.Dispose();
+            return Ok();
+        }
+
     }
 }

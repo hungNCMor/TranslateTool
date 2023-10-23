@@ -1,5 +1,5 @@
 using TranslateJPToViLib;
-using TranslateLib;
+using TranslateLib.Excel;
 using TranslateLib.Interface;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -8,6 +8,6 @@ namespace TranslateLib.Interface
 {
     public interface ITranslate
     {
-        public string TranslateText(string input, string src = "ja", string des = "en");
+        public string TranslateText(string input, string src = "ja", string des = "vi");
     }
 }

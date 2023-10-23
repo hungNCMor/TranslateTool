@@ -12,8 +12,15 @@
     <PackageReference Include="FastExcel" Version="3.0.13" />
     <PackageReference Include="IronXL.Excel" Version="2023.10.7" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1018" />
+    <PackageReference Include="MicrosoftOfficeCore" Version="15.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NPOI" Version="2.6.2" />
+    <PackageReference Include="Spire.Presentation" Version="8.10.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="PDF\" />
   </ItemGroup>
 
 </Project>

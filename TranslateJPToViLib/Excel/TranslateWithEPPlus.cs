@@ -10,7 +10,7 @@ using TranslateLib.Interface;
 using TranslateLib.Model;
 using OfficeOpenXml;
 
-namespace TranslateLib
+namespace TranslateLib.Excel
 {
     public class TranslateWithEPplus : ITranslateExcel
     {

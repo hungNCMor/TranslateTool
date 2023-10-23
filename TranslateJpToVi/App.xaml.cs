@@ -9,8 +9,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using TranslateJPToViLib;
-using TranslateLib;
+using TranslateLib.Excel;
 using TranslateLib.Interface;
+using TranslateLib.PPT;
 
 namespace TranslateJpToVi
 {
@@ -28,6 +29,7 @@ namespace TranslateJpToVi
                     services.AddSingleton<MainWindow>();
                     services.AddTransient<ITranslateExcel, TranslateExcelWithNpoi>();
                     services.AddTransient<ITranslate, TranslateWithGG>();
+                    services.AddTransient<ITranslateFile, TranslatePPTWithSpire>();
                     var serviceProvider = services.BuildServiceProvider();
                     var logger = serviceProvider.GetService<ILogger<MainWindow>>();
                     services.AddSingleton(typeof(ILogger), logger);
