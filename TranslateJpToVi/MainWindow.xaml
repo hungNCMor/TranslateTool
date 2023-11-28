@@ -6,23 +6,26 @@
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:TranslateJpToVi"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1000">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Label  Content="Path file&#xA;" Margin="191,144,239,415" Height="25" />
-        <TextBox Panel.ZIndex="2" x:Name="PathTxt" Margin="191,187,0,352" TextWrapping="Wrap" TextChanged="TextBox_TextChanged"/>
-        <Button x:Name="TranslateBtn" Content="Translate" HorizontalAlignment="Left" Click="Button_Click" Margin="191,277,0,282" Width="113" Height="25"/>
-        <Button Panel.ZIndex="5" x:Name="Upload" Content="Upload" HorizontalAlignment="Left" Margin="191,212,0,0" VerticalAlignment="Top" Click="Button_Click_1"/>
-        <Grid x:Name="Overlay" Panel.ZIndex="1000" Visibility="Collapsed">
-            <Grid.Background>
-                <SolidColorBrush Color="Black" Opacity=".5"/>
-            </Grid.Background>
-            <fa:ImageAwesome Name ="Spin" Icon="Spinner" Spin="True" Height="48" Width="48" />
-            <!-- Add controls as needed -->
-        </Grid>
-
+        Title="MainWindow" Height="400" Width="1000">
+    <Grid x:Name="LangCbb">
+        <StackPanel Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" Name="StackPanel" VerticalAlignment="Top" Height="179" Width="960">
+            <Label  Content="Path file&#xA;" Margin="0,10,0,10" Height="25" />
+            <TextBox Panel.ZIndex="2" x:Name="PathTxt" Margin="0,10,0,10" TextWrapping="Wrap" TextChanged="TextBox_TextChanged"/>
+            <Button Panel.ZIndex="5" x:Name="Upload" Content="Upload" HorizontalAlignment="Left" Margin="0,10,0,10" VerticalAlignment="Top" Click="Button_Click_1"/>
+            <Button x:Name="TranslateBtn" Content="Translate" HorizontalAlignment="Left" Click="Button_Click" Margin="0,10,0,10" Width="113" Height="25" RenderTransformOrigin="0.434,-1.519"/>
+            <Grid x:Name="Overlay" Panel.ZIndex="1000" Visibility="Collapsed">
+                <Grid.Background>
+                    <SolidColorBrush Color="Black" Opacity=".5"/>
+                </Grid.Background>
+                <fa:ImageAwesome Name ="Spin" Icon="Spinner" Spin="True" Height="48" Width="48" />
+                <!-- Add controls as needed -->
+            </Grid>
+        </StackPanel>
+        <ComboBox HorizontalAlignment="Left" Margin="125,92,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBox_SelectionChanged_2" Name="langCombobox">
+            <ComboBoxItem Content="en"/>
+            <ComboBoxItem Content="ja"/>
+            <ComboBoxItem Content="vi"/>
+        </ComboBox>
 
     </Grid>
 </Window>

@@ -175,22 +175,6 @@ namespace TranslateLib.PPT
             }
 
         }
-        public async Task TranslateFileByPathSavePath(string path)
-        {
-            // Assuming you have a Presentation object called 'presentation'
-            Spire.Presentation.Presentation presentation = new Spire.Presentation.Presentation();
-
-            // Load the PowerPoint file
-            presentation.LoadFromFile(path);
-            var tasks = new List<Task>();
-            foreach (ISlide slide in presentation.Slides)
-            {
-                tasks.Add(HandleSlide(slide));
-            }
-            await Task.WhenAll(tasks);
-            var newPath = path.Replace(".pptx", "2.pptx");
-            presentation.SaveToFile(newPath, FileFormat.Pptx2013);
-        }
         //public async Task TranslateFileByPathSavePath(string path)
         //{
         //    // Assuming you have a Presentation object called 'presentation'
@@ -201,61 +185,77 @@ namespace TranslateLib.PPT
         //    var tasks = new List<Task>();
         //    foreach (ISlide slide in presentation.Slides)
         //    {
-        //        // Read the shapes within the slide
-        //        foreach (IShape shape in slide.Shapes)
-        //        {
-        //            string shapeText = string.Empty;
-
-        //            if (shape is IAutoShape)
-        //            {
-        //                IAutoShape autoShape = (IAutoShape)shape;
-        //                shapeText = autoShape.TextFrame.Text.Trim();
-        //                if (!string.IsNullOrEmpty(shapeText))
-        //                {
-        //                    autoShape.TextFrame.Text = _translate.TranslateText(shapeText.Replace("。", ". "), "ja", "en");
-        //                    autoShape.TextFrame.TextRange.FontHeight = 12;
-
-        //                    if (autoShape.TextFrame.Paragraphs.Count > 0)
-        //                    {
-        //                        foreach (TextParagraph paragraph in autoShape.TextFrame.Paragraphs)
-        //                        {
-        //                            foreach (Spire.Presentation.TextRange item in paragraph.TextRanges)
-        //                            {
-        //                                item.FontHeight = 12; // Replace 18 with the desired font size
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            else if (shape is Spire.Presentation.ITable)
-        //            {
-        //                var table = (Spire.Presentation.ITable)shape;
-        //                // Read the table data
-        //                if (table != null)
-        //                {
-        //                    int rowCount = table.TableRows.Count;
-        //                    int columnCount = table.ColumnsList.Count;
-
-        //                    for (int row = 0; row < rowCount; row++)
-        //                    {
-        //                        for (int column = 0; column < columnCount; column++)
-        //                        {
-        //                            Spire.Presentation.Cell cell = table[column, row];
-        //                            string cellText = cell.TextFrame.Text.Trim();
-        //                            if (!string.IsNullOrEmpty(cellText))
-        //                                cell.TextFrame.Text = _translate.TranslateText(cellText.Replace("。", ". "), "ja", "en");
-        //                            // Set the font size
-        //                            cell.TextFrame.TextRange.FontHeight = 12;
-        //                            // Perform operations with cellText
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
+        //        tasks.Add(HandleSlide(slide));
         //    }
+        //    await Task.WhenAll(tasks);
         //    var newPath = path.Replace(".pptx", "2.pptx");
         //    presentation.SaveToFile(newPath, FileFormat.Pptx2013);
         //}
+        public async Task TranslateFileByPathSavePath(string path)
+        {
+            // Assuming you have a Presentation object called 'presentation'
+            Spire.Presentation.Presentation presentation = new Spire.Presentation.Presentation();
+
+            // Load the PowerPoint file
+            presentation.LoadFromFile(path);
+            var tasks = new List<Task>();
+            foreach (ISlide slide in presentation.Slides)
+            {
+                // Read the shapes within the slide
+                foreach (IShape shape in slide.Shapes)
+                {
+                    string shapeText = string.Empty;
+
+                    if (shape is IAutoShape)
+                    {
+                        IAutoShape autoShape = (IAutoShape)shape;
+                        shapeText = autoShape.TextFrame.Text.Trim();
+                        if (!string.IsNullOrEmpty(shapeText))
+                        {
+                            autoShape.TextFrame.Text = _translate.TranslateText(shapeText.Replace("。", ". "), "ja", "en");
+                            autoShape.TextFrame.TextRange.FontHeight = 12;
+
+                            if (autoShape.TextFrame.Paragraphs.Count > 0)
+                            {
+                                foreach (TextParagraph paragraph in autoShape.TextFrame.Paragraphs)
+                                {
+                                    foreach (Spire.Presentation.TextRange item in paragraph.TextRanges)
+                                    {
+                                        item.FontHeight = 12; // Replace 18 with the desired font size
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (shape is Spire.Presentation.ITable)
+                    {
+                        var table = (Spire.Presentation.ITable)shape;
+                        // Read the table data
+                        if (table != null)
+                        {
+                            int rowCount = table.TableRows.Count;
+                            int columnCount = table.ColumnsList.Count;
+
+                            for (int row = 0; row < rowCount; row++)
+                            {
+                                for (int column = 0; column < columnCount; column++)
+                                {
+                                    Spire.Presentation.Cell cell = table[column, row];
+                                    string cellText = cell.TextFrame.Text.Trim();
+                                    if (!string.IsNullOrEmpty(cellText))
+                                        cell.TextFrame.Text = _translate.TranslateText(cellText.Replace("。", ". "), "ja", "en");
+                                    // Set the font size
+                                    cell.TextFrame.TextRange.FontHeight = 12;
+                                    // Perform operations with cellText
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            var newPath = path.Replace(".pptx", "2.pptx");
+            presentation.SaveToFile(newPath, FileFormat.Pptx2013);
+        }
 
         public Task<MemoryStream> TranslateFileByStream(MemoryStream stream, string fileName)
         {

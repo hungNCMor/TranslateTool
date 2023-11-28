@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -66,6 +67,12 @@ namespace TranslateJpToVi
             {
                 PathTxt.Text = dlg.FileName;
             }
+        }
+
+
+        private void ComboBox_SelectionChanged_2(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }
